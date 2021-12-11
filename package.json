@@ -2,6 +2,7 @@
   "name": "poketype-battle",
   "version": "1.0.0",
   "description": "A fun little game built using elm.",
+  "repository": "https://github.com/robbopatterson/poketype-battle",
   "main": "index.js",
   "scripts": {
     "build": "elm make src/HomePage.elm --output dist/elm.js"
