@@ -3,23 +3,18 @@ module HomePage exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-
 view model =
     div [ class "jumbotron" ]
-        [ h1 [] [ text "Welcome to Dunder Mifflin!" ]
-        , p []
-            [ text "Dunder Mifflin Inc. (stock symbol "
-            , strong [] [ text "DMI" ]
-            , text <|
-                """ 
-                ) is a micro-cap regional paper and office 
-                supply distributor with an emphasis on servicing 
-                small-business clients.
-                """
-            ]
+        [ h1 [] [ text "Welcome to PokeType Battle!" ]
+        ,p [] [ text "Defeat as many as you can in 30 seconds"]
+        ,a [href "https://www.pinterest.ca/pin/144889312992375493/"] [ text "Click for Pokemon Effectiveness Chart"]
+        , p [] [
+            button [] [text "Start"]
+        ]
+        
         ]
 
-
+main : Html msg
 main =
     view "dummy model"
     
