@@ -1,0 +1,11 @@
+{
+  "name": "poketype-battle",
+  "version": "1.0.0",
+  "description": "A fun little game built using elm.",
+  "main": "index.js",
+  "scripts": {
+    "build": "elm make src/HomePage.elm --output dist/elm.js"
+  },
+  "author": "Robert Patterson",
+  "license": "ISC"
+}
