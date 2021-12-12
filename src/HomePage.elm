@@ -107,6 +107,7 @@ type Msg
     | RandomizedWeakAgainst ( Maybe PokeType, List PokeType )
     | RandomizedStrongAgainst ( Maybe PokeType, List PokeType )
     | RandomizedNeutralAgainst ( Maybe PokeType, List PokeType )
+    | RandomizedOpponentOrder Int
 
 
 type State
@@ -189,6 +190,84 @@ getScoreDelta opponentType myCounterType =
                 10
 
 
+vsOrWhy : PokeType -> PokeType -> String
+vsOrWhy opponentType myCounterType =
+    let
+        strongAgainstReason =
+            getStrongAgainstReason myCounterType opponentType
+
+        reverseStrongAgainstReason =
+            getStrongAgainstReason opponentType myCounterType
+    in
+        case strongAgainstReason of
+            Just reason ->
+                getName myCounterType ++ " " ++ reason ++ " " ++ getName opponentType
+
+            Nothing ->
+              case reverseStrongAgainstReason of
+                Just reason ->
+                    getName opponentType ++ " " ++ reason ++ " " ++ getName myCounterType
+
+                Nothing ->
+                    getName myCounterType ++ " vs " ++ getName opponentType
+
+generateLastRoundSummary : PokeType -> PokeType -> LastRoundSummary
+generateLastRoundSummary opponentType myCounterType =
+    let
+        isCounterStrong =
+            List.member myCounterType (listStrongAgainst opponentType)
+
+        isCounterWeak =
+            List.member myCounterType (listWeakAgainst opponentType)
+
+        ( color, scoreDelta ) =
+            case ( isCounterStrong, isCounterWeak ) of
+                ( True, True ) ->
+                    ( "yellow", 0 )
+
+                ( False, False ) ->
+                    ( "yellow", 0 )
+
+                ( True, False ) ->
+                    ( "red", -10 )
+
+                ( False, True ) ->
+                    ( "green", 10 )
+
+        scoreDeltaDisplay =
+            if scoreDelta < 0 then
+                String.fromInt scoreDelta
+
+            else
+                "+" ++ String.fromInt scoreDelta
+
+        message =
+            -- Something like "+10 Fire melts Ice"
+            scoreDeltaDisplay
+                ++ " "
+                ++ vsOrWhy opponentType myCounterType
+    in
+    { message = message, color = color, scoreDelta = scoreDelta }
+
+getStrongAgainstReason : PokeType -> PokeType -> Maybe String
+getStrongAgainstReason pokeType againstType =
+    let
+        strongAgainstAndWhy =
+            listStrongAgainstAndWhy pokeType
+
+        strongAgainstFiltered =
+            List.filter
+                (\( why, pt ) -> pt == againstType)
+                strongAgainstAndWhy
+    in
+         case List.head strongAgainstFiltered of
+            Just (why, pt) ->
+                Just why
+            Nothing ->
+                Nothing
+    
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -199,8 +278,7 @@ update msg model =
 
         CounterWith pokeType ->
             let
-                scoreDelta =
-                    getScoreDelta model.opponent pokeType
+                lastRoundSummary = generateLastRoundSummary model.opponent pokeType
 
                 ( newOpponent, newOpponentList ) =
                     rotateOpponents model.nextOpponentList
@@ -208,7 +286,8 @@ update msg model =
             ( { model
                 | opponent = newOpponent
                 , nextOpponentList = newOpponentList
-                , score = model.score + scoreDelta
+                , score = model.score + lastRoundSummary.scoreDelta
+                , lastRoundSummary = Just lastRoundSummary
               }
             , startWeakAgainstSelection newOpponent
             )
@@ -260,10 +339,31 @@ update msg model =
                         Nothing ->
                             model.opponent
             in
-            ( { model | neutralAgainst = pokeType, counterWith = ( model.strongAgainst, pokeType, model.weakAgainst ) }
-            , Cmd.none
+            ( 
+                { model | neutralAgainst = pokeType }
+                , startOpponentOrderSelection model
             )
 
+        RandomizedOpponentOrder randomInt1to6 ->
+            let
+                counterWith =
+                    case randomInt1to6 of 
+                        1 -> (model.strongAgainst, model.neutralAgainst, model.weakAgainst)
+                        2 -> (model.strongAgainst, model.weakAgainst, model.neutralAgainst)
+                        3 -> (model.neutralAgainst, model.weakAgainst, model.strongAgainst)
+                        4 -> (model.neutralAgainst, model.strongAgainst, model.weakAgainst)
+                        5 -> (model.weakAgainst, model.strongAgainst, model.neutralAgainst)
+                        6 -> (model.weakAgainst, model.neutralAgainst, model.strongAgainst)
+                        _ -> (ShouldNeverOccur,ShouldNeverOccur,ShouldNeverOccur)
+            in
+            ( 
+                {model|counterWith = counterWith}
+                , Cmd.none
+            )
+
+startOpponentOrderSelection: Model -> Cmd Msg
+startOpponentOrderSelection model =
+    generate RandomizedOpponentOrder (Random.int 1 6)
 
 startWeakAgainstSelection : PokeType -> Cmd Msg
 startWeakAgainstSelection opponent =
