@@ -163,3 +163,63 @@ getColor pokeType =
 
         ShouldNeverOccur ->
             ""
+
+listWeakAgainst : PokeType -> List PokeType
+listWeakAgainst pokeType =
+    case pokeType of
+        Grass ->
+            [ Fire, Ice, Poison, Flying, Bug ]
+
+        Rock ->
+            [Water, Grass, Fighting, Ground, Steel]
+            
+        Ice ->
+            [Fire, Fighting, Rock, Steel]
+            
+        Dragon ->
+            [Ice, Dragon, Fairy]
+            
+        Dark ->
+            [Fighting, Bug, Fairy]
+            
+        Psychic ->
+            [Bug,Ghost,Dark]
+            
+        Bug ->
+            [Fire,Flying,Rock]
+            
+        Flying ->
+            [Electric,Ice,Rock]
+            
+        Steel ->
+            [Fire,Fighting,Ground]
+            
+        Fire ->
+            [Water,Rock,Ground]
+            
+        Fighting ->
+            [Flying,Psychic,Fairy]
+            
+        Ground ->
+            [Water,Grass,Ice]
+            
+        Ghost ->
+            [Ghost,Dark]
+            
+        Poison ->
+            [Ground,Psychic]
+            
+        Water ->
+            [Electric,Grass]
+            
+        Fairy ->
+            [Poison,Steel]
+            
+        Electric ->
+            [Ground]
+
+        Normal ->
+            [Fighting]
+
+        ShouldNeverOccur ->
+            []

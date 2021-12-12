@@ -104,6 +104,7 @@ type Msg
     = Start
     | CounterWith PokeType
     | RandomizedOpponents (List PokeType)
+    | RandomizedWeakAgainst ( Maybe PokeType, List PokeType )
 
 
 type State
@@ -166,7 +167,7 @@ main =
         }
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Start ->
@@ -178,20 +179,42 @@ update msg model =
             let
                 ( newOpponent, newOpponentList ) =
                     rotateOpponents model.nextOpponentList
+
             in
             ( { model | opponent = newOpponent, nextOpponentList = newOpponentList }
-            , Cmd.none
+            , startWeakAgainstSelection newOpponent
             )
 
         RandomizedOpponents pokeTypes ->
             let
                 ( newOpponent, newOpponentList ) =
                     rotateOpponents pokeTypes
-            in        
-            ( 
-                { model | opponent = newOpponent, nextOpponentList = newOpponentList }
-                ,Cmd.none 
+            in
+            ( { model | opponent = newOpponent, nextOpponentList = newOpponentList }
+            , startWeakAgainstSelection newOpponent
             )
+
+        RandomizedWeakAgainst ( maybePokeType, _ ) ->
+            let
+                pokeType =
+                    case maybePokeType of
+                        Just pt ->
+                            pt
+
+                        Nothing ->
+                            ShouldNeverOccur
+            in
+            ( { model | weakAgainst = pokeType, counterWith = ( pokeType, ShouldNeverOccur, ShouldNeverOccur ) }
+            , Cmd.none
+            )
+
+startWeakAgainstSelection: PokeType -> Cmd Msg
+startWeakAgainstSelection opponent =
+    let
+        weakAgainstList =
+            listWeakAgainst opponent    
+    in
+        generate RandomizedWeakAgainst (Random.List.choose weakAgainstList)
 
 
 rotateOpponents : List PokeType -> ( PokeType, List PokeType )
