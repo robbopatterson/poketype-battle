@@ -223,3 +223,128 @@ listWeakAgainst pokeType =
 
         ShouldNeverOccur ->
             []
+
+listNeutralAgainst : PokeType -> List PokeType
+listNeutralAgainst pokeType =
+    let
+        allWeakAndStrongAndSelf =
+            pokeType :: listWeakAgainst pokeType ++ listStrongAgainst pokeType
+    in
+    List.filter (\pt -> not (List.member pt allWeakAndStrongAndSelf)) allTypes
+
+listStrongAgainst : PokeType -> List PokeType
+listStrongAgainst pokeType =
+    List.map
+        (\( _, strongAgainst ) -> strongAgainst)
+        (listStrongAgainstAndWhy pokeType)
+
+
+listStrongAgainstAndWhy : PokeType -> List ( String, PokeType )
+listStrongAgainstAndWhy pokeType =
+    case pokeType of
+        Grass ->
+            [ ( "soaks up", Water )
+            , ( "grows over", Ground )
+            , ( "covers", Rock )
+            ]
+
+        Rock ->
+            [ ( "impervious to", Fire )
+            , ( "smashs", Ice )
+            , ( "smashs", Flying )
+            , ( "smashs", Bug )
+            ]
+
+        Ice ->
+            [ ( "covers", Grass )
+            , ( "covers", Ground )
+            , ( "impars", Flying )
+            , ( "freeze", Dragon )
+            ]
+
+        Dragon ->
+            [ ( "matches", Dragon )
+            ]
+
+        Dark ->
+            [ ( "scares", Psychic )
+            ]
+
+        Psychic ->
+            [ ( "remotely defeats", Fighting )
+            , ( "remotely defeats", Poison )
+            ]
+
+        Bug ->
+            [ ( "eat", Grass )
+            , ( "distracts", Psychic )
+            , ( "swarms", Dark )
+            ]
+
+        Flying ->
+            [ ( "poops on", Grass )
+            , ( "swoops over", Fighting )
+            , ( "eats", Bug )
+            ]
+
+        Steel ->
+            [ ( "cuts", Ice )
+            , ( "crushs", Rock )
+            , ( "destroys", Fairy )
+            ]
+
+        Fire ->
+            [ ( "burns", Grass )
+            , ( "melts", Ice )
+            , ( "attracts", Bug )
+            , ( "melts", Steel )
+            ]
+
+        Fighting ->
+            [ ( "beat up", Normal )
+            , ( "cracks", Ice )
+            , ( "chops", Rock )
+            , ( "punchs out", Dark )
+            , ( "out manovers", Steel )
+            ]
+
+        Ground ->
+            [ ( "covers", Fire )
+            , ( "insolates", Electric )
+            , ( "soaks up", Poison )
+            , ( "supports", Rock )
+            , ( "unscathed by", Steel )
+            ]
+
+        Ghost ->
+            [ ( "scares", Psychic )
+            , ( "scares", Ghost )
+            ]
+
+        Poison ->
+            [ ( "kills", Grass )
+            , ( "kills", Fairy )
+            ]
+
+        Water ->
+            [ ( "puts out", Fire )
+            , ( "erodes", Ground )
+            , ( "erodes", Rock )
+            ]
+
+        Fairy ->
+            [ ( "evades", Fighting )
+            , ( "evades", Dragon )
+            , ( "always defeats", Dark )
+            ]
+
+        Electric ->
+            [ ( "flows through", Water )
+            , ( "strikes", Flying )
+            ]
+
+        Normal ->
+            []
+
+        ShouldNeverOccur ->
+            []
