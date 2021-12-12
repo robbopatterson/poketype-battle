@@ -4,6 +4,7 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import PokeTypes exposing (..)
 
 
 view model =
@@ -36,14 +37,43 @@ type State
     | Started
 
 
+type alias LastRoundSummary =
+    { message : String
+    , color : String
+    , scoreDelta : Int
+    }
+
+
 type alias Model =
     { state : State
+    , opponent : PokeType
+    , score : Int
+    , remainingseconds : Int
+    , lastRoundSummary : Maybe LastRoundSummary
+    , nextOpponentList : List PokeType
+    , strongAgainst : PokeType
+    , neutralAgainst : PokeType
+    , weakAgainst : PokeType
+    , counterWith : ( PokeType, PokeType, PokeType )
     }
+
+
+gameDuration =
+    30
 
 
 initialModel : Model
 initialModel =
     { state = Initial
+    , opponent = Grass
+    , score = 0
+    , remainingseconds = gameDuration
+    , lastRoundSummary = Nothing
+    , nextOpponentList = allTypes
+    , strongAgainst = ShouldNeverOccur
+    , neutralAgainst = ShouldNeverOccur
+    , weakAgainst = ShouldNeverOccur
+    , counterWith = ( ShouldNeverOccur, ShouldNeverOccur, ShouldNeverOccur )
     }
 
 
@@ -62,7 +92,7 @@ update msg model =
     case msg of
         Start ->
             ( { model | state = Started }
-            ,Cmd.none
+            , Cmd.none
             )
 
 

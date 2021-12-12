@@ -1,4 +1,47 @@
 .jumbotron {
-    background-color: red;
+    background-color: rgb(198, 230, 193);
     text-align: center;
+  }
+
+.game-container {
+    display: grid;
+    width: 100vw;
+    height: 100vh;
+    grid-gap: 10px;
+    padding: 10px;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.title-section {
+    grid-row: 1 / span 1;
+    grid-column: 1 / span 3;
+}
+.opponent {
+    grid-row: 2 / span 2;
+    grid-column: 1 / span 3;
+    background-color: aqua;
+}
+.verses1 {
+    grid-row: 4 / span 4;
+    grid-column: 1 / span 1;
+    background-color: blueviolet;
+}
+.verses2 {
+    grid-row: 4 / span 4;
+    grid-column: 2 / span 1;
+    background-color: coral;
+}
+.verses3 {
+    grid-row: 4 / span 4;
+    grid-column: 3 / span 1;
+    background-color: darkgreen;
+}
+.type-name {
+    font-size: 5em;
+    color: white;
 }
