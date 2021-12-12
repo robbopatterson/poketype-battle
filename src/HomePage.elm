@@ -89,7 +89,7 @@ counterDiv classStr pokeType model =
         button
             [ class classStr
             , style "background-color" (getColor pokeType)
-            --, onClick (CounterWith pokeType)
+            , onClick (CounterWith pokeType)
             ]
             [ div []
                 [ p [] [ text "Counter with:" ]
@@ -101,6 +101,7 @@ counterDiv classStr pokeType model =
 
 type Msg
     = Start
+    | CounterWith PokeType
 
 
 type State
@@ -165,6 +166,29 @@ update msg model =
             ( { model | state = Started }
             , Cmd.none
             )
+        CounterWith pokeType ->
+            let
+                (newOpponent, newOpponentList) = rotateOpponents model.nextOpponentList
+            in 
+            ( 
+                { model| opponent=newOpponent, nextOpponentList=newOpponentList }, 
+                Cmd.none 
+            )
+
+rotateOpponents: List PokeType -> ( PokeType, List PokeType )
+rotateOpponents pokeTypes = 
+    let
+        head = case List.head pokeTypes of
+           Just pokeType -> pokeType
+           Nothing -> ShouldNeverOccur
+
+        tail = case List.tail pokeTypes of
+           Just t -> t
+           Nothing -> pokeTypes
+
+    in
+        (head, tail++[head])
+
 
 
 subscriptions : model -> Sub msg
