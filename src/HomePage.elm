@@ -169,6 +169,26 @@ main =
         }
 
 
+getScoreDelta : PokeType -> PokeType -> Int
+getScoreDelta opponentType myCounterType =
+    let
+        isCounterStrong =
+            List.member myCounterType (listStrongAgainst opponentType)
+
+        isCounterWeak =
+            List.member myCounterType (listWeakAgainst opponentType)
+    in
+        case (isCounterStrong, isCounterWeak) of
+           (True, True) ->
+                0
+           (False, False) ->
+                0
+           (True, False) ->
+                -10
+           (False, True) ->
+                10
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -179,11 +199,17 @@ update msg model =
 
         CounterWith pokeType ->
             let
+                scoreDelta =
+                    getScoreDelta model.opponent pokeType
+
                 ( newOpponent, newOpponentList ) =
                     rotateOpponents model.nextOpponentList
-
             in
-            ( { model | opponent = newOpponent, nextOpponentList = newOpponentList }
+            ( { model
+                | opponent = newOpponent
+                , nextOpponentList = newOpponentList
+                , score = model.score + scoreDelta
+              }
             , startWeakAgainstSelection newOpponent
             )
 
@@ -222,7 +248,7 @@ update msg model =
             in
             ( { model | strongAgainst = pokeType }
             , startNeutralAgainstSelection model.opponent
-            )            
+            )
 
         RandomizedNeutralAgainst ( maybePokeType, _ ) ->
             let
@@ -236,33 +262,34 @@ update msg model =
             in
             ( { model | neutralAgainst = pokeType, counterWith = ( model.strongAgainst, pokeType, model.weakAgainst ) }
             , Cmd.none
-            )            
+            )
 
 
-startWeakAgainstSelection: PokeType -> Cmd Msg
+startWeakAgainstSelection : PokeType -> Cmd Msg
 startWeakAgainstSelection opponent =
     let
         weakAgainstList =
-            listWeakAgainst opponent    
+            listWeakAgainst opponent
     in
-        generate RandomizedWeakAgainst (Random.List.choose weakAgainstList)
+    generate RandomizedWeakAgainst (Random.List.choose weakAgainstList)
 
-startStrongAgainstSelection: PokeType -> Cmd Msg
+
+startStrongAgainstSelection : PokeType -> Cmd Msg
 startStrongAgainstSelection opponent =
     let
         strongAgainstList =
-            listStrongAgainst opponent    
+            listStrongAgainst opponent
     in
-        generate RandomizedStrongAgainst (Random.List.choose strongAgainstList)
+    generate RandomizedStrongAgainst (Random.List.choose strongAgainstList)
 
-startNeutralAgainstSelection: PokeType -> Cmd Msg
+
+startNeutralAgainstSelection : PokeType -> Cmd Msg
 startNeutralAgainstSelection opponent =
     let
         neutralAgainstList =
-            listNeutralAgainst opponent    
+            listNeutralAgainst opponent
     in
-        generate RandomizedNeutralAgainst (Random.List.choose neutralAgainstList)
-
+    generate RandomizedNeutralAgainst (Random.List.choose neutralAgainstList)
 
 
 rotateOpponents : List PokeType -> ( PokeType, List PokeType )
