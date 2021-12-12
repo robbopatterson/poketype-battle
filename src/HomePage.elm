@@ -204,7 +204,7 @@ update msg model =
                             pt
 
                         Nothing ->
-                            ShouldNeverOccur
+                            model.opponent
             in
             ( { model | weakAgainst = pokeType }
             , startStrongAgainstSelection model.opponent
@@ -218,7 +218,7 @@ update msg model =
                             pt
 
                         Nothing ->
-                            ShouldNeverOccur
+                            model.opponent
             in
             ( { model | strongAgainst = pokeType }
             , startNeutralAgainstSelection model.opponent
@@ -232,7 +232,7 @@ update msg model =
                             pt
 
                         Nothing ->
-                            ShouldNeverOccur
+                            model.opponent
             in
             ( { model | neutralAgainst = pokeType, counterWith = ( model.strongAgainst, pokeType, model.weakAgainst ) }
             , Cmd.none
