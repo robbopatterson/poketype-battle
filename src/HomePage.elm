@@ -184,9 +184,13 @@ update msg model =
             )
 
         RandomizedOpponents pokeTypes ->
+            let
+                ( newOpponent, newOpponentList ) =
+                    rotateOpponents pokeTypes
+            in        
             ( 
-                {model|nextOpponentList = pokeTypes}, 
-                Cmd.none 
+                { model | opponent = newOpponent, nextOpponentList = newOpponentList }
+                ,Cmd.none 
             )
 
 
