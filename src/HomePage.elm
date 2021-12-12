@@ -5,6 +5,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import PokeTypes exposing (..)
+import Random exposing (..)
+import Random.List exposing (..)
 
 
 view model =
@@ -98,10 +100,10 @@ counterDiv classStr pokeType model =
             ]
 
 
-
 type Msg
     = Start
     | CounterWith PokeType
+    | RandomizedOpponents (List PokeType)
 
 
 type State
@@ -149,10 +151,15 @@ initialModel =
     }
 
 
+startOpponentSelection : Cmd Msg
+startOpponentSelection =
+    generate RandomizedOpponents (Random.List.shuffle allTypes)
+
+
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \flags -> ( initialModel, Cmd.none )
+        { init = \flags -> ( initialModel, startOpponentSelection )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -166,29 +173,43 @@ update msg model =
             ( { model | state = Started }
             , Cmd.none
             )
+
         CounterWith pokeType ->
             let
-                (newOpponent, newOpponentList) = rotateOpponents model.nextOpponentList
-            in 
+                ( newOpponent, newOpponentList ) =
+                    rotateOpponents model.nextOpponentList
+            in
+            ( { model | opponent = newOpponent, nextOpponentList = newOpponentList }
+            , Cmd.none
+            )
+
+        RandomizedOpponents pokeTypes ->
             ( 
-                { model| opponent=newOpponent, nextOpponentList=newOpponentList }, 
+                {model|nextOpponentList = pokeTypes}, 
                 Cmd.none 
             )
 
-rotateOpponents: List PokeType -> ( PokeType, List PokeType )
-rotateOpponents pokeTypes = 
+
+rotateOpponents : List PokeType -> ( PokeType, List PokeType )
+rotateOpponents pokeTypes =
     let
-        head = case List.head pokeTypes of
-           Just pokeType -> pokeType
-           Nothing -> ShouldNeverOccur
+        head =
+            case List.head pokeTypes of
+                Just pokeType ->
+                    pokeType
 
-        tail = case List.tail pokeTypes of
-           Just t -> t
-           Nothing -> pokeTypes
+                Nothing ->
+                    ShouldNeverOccur
 
+        tail =
+            case List.tail pokeTypes of
+                Just t ->
+                    t
+
+                Nothing ->
+                    pokeTypes
     in
-        (head, tail++[head])
-
+    ( head, tail ++ [ head ] )
 
 
 subscriptions : model -> Sub msg
