@@ -5,7 +5,8 @@
   "repository": "https://github.com/robbopatterson/poketype-battle",
   "main": "index.js",
   "scripts": {
-    "build": "elm make src/HomePage.elm --output dist/elm.js"
+    "build": "elm make src/HomePage.elm --output dist/elm.js",
+    "deploy": "aws s3 cp dist s3://robdev.ca/poketype --recursive"    
   },
   "author": "Robert Patterson",
   "license": "ISC"
