@@ -1,6 +1,7 @@
 module HomePage exposing (main)
 
 import Browser
+import Delay
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -108,6 +109,7 @@ type Msg
     | RandomizedStrongAgainst ( Maybe PokeType, List PokeType )
     | RandomizedNeutralAgainst ( Maybe PokeType, List PokeType )
     | RandomizedOpponentOrder Int
+    | NextSecond
 
 
 type State
@@ -179,15 +181,18 @@ getScoreDelta opponentType myCounterType =
         isCounterWeak =
             List.member myCounterType (listWeakAgainst opponentType)
     in
-        case (isCounterStrong, isCounterWeak) of
-           (True, True) ->
-                0
-           (False, False) ->
-                0
-           (True, False) ->
-                -10
-           (False, True) ->
-                10
+    case ( isCounterStrong, isCounterWeak ) of
+        ( True, True ) ->
+            0
+
+        ( False, False ) ->
+            0
+
+        ( True, False ) ->
+            -10
+
+        ( False, True ) ->
+            10
 
 
 vsOrWhy : PokeType -> PokeType -> String
@@ -199,17 +204,18 @@ vsOrWhy opponentType myCounterType =
         reverseStrongAgainstReason =
             getStrongAgainstReason opponentType myCounterType
     in
-        case strongAgainstReason of
-            Just reason ->
-                getName myCounterType ++ " " ++ reason ++ " " ++ getName opponentType
+    case strongAgainstReason of
+        Just reason ->
+            getName myCounterType ++ " " ++ reason ++ " " ++ getName opponentType
 
-            Nothing ->
-              case reverseStrongAgainstReason of
+        Nothing ->
+            case reverseStrongAgainstReason of
                 Just reason ->
                     getName opponentType ++ " " ++ reason ++ " " ++ getName myCounterType
 
                 Nothing ->
                     getName myCounterType ++ " vs " ++ getName opponentType
+
 
 generateLastRoundSummary : PokeType -> PokeType -> LastRoundSummary
 generateLastRoundSummary opponentType myCounterType =
@@ -249,6 +255,7 @@ generateLastRoundSummary opponentType myCounterType =
     in
     { message = message, color = color, scoreDelta = scoreDelta }
 
+
 getStrongAgainstReason : PokeType -> PokeType -> Maybe String
 getStrongAgainstReason pokeType againstType =
     let
@@ -260,25 +267,35 @@ getStrongAgainstReason pokeType againstType =
                 (\( why, pt ) -> pt == againstType)
                 strongAgainstAndWhy
     in
-         case List.head strongAgainstFiltered of
-            Just (why, pt) ->
-                Just why
-            Nothing ->
-                Nothing
-    
+    case List.head strongAgainstFiltered of
+        Just ( why, pt ) ->
+            Just why
+
+        Nothing ->
+            Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Start ->
-            ( { model | state = Started }
-            , Cmd.none
+            ( { model | state = Started, remainingseconds=gameDuration, score=0 }
+            , Delay.after 1000 NextSecond
+            )
+
+        NextSecond ->
+            ( { model | remainingseconds = model.remainingseconds - 1 }
+            , if model.remainingseconds > 1 then
+                Delay.after 1000 NextSecond
+
+              else
+                Cmd.none
             )
 
         CounterWith pokeType ->
             let
-                lastRoundSummary = generateLastRoundSummary model.opponent pokeType
+                lastRoundSummary =
+                    generateLastRoundSummary model.opponent pokeType
 
                 ( newOpponent, newOpponentList ) =
                     rotateOpponents model.nextOpponentList
@@ -339,31 +356,44 @@ update msg model =
                         Nothing ->
                             model.opponent
             in
-            ( 
-                { model | neutralAgainst = pokeType }
-                , startOpponentOrderSelection model
+            ( { model | neutralAgainst = pokeType }
+            , startOpponentOrderSelection model
             )
 
         RandomizedOpponentOrder randomInt1to6 ->
             let
                 counterWith =
-                    case randomInt1to6 of 
-                        1 -> (model.strongAgainst, model.neutralAgainst, model.weakAgainst)
-                        2 -> (model.strongAgainst, model.weakAgainst, model.neutralAgainst)
-                        3 -> (model.neutralAgainst, model.weakAgainst, model.strongAgainst)
-                        4 -> (model.neutralAgainst, model.strongAgainst, model.weakAgainst)
-                        5 -> (model.weakAgainst, model.strongAgainst, model.neutralAgainst)
-                        6 -> (model.weakAgainst, model.neutralAgainst, model.strongAgainst)
-                        _ -> (ShouldNeverOccur,ShouldNeverOccur,ShouldNeverOccur)
+                    case randomInt1to6 of
+                        1 ->
+                            ( model.strongAgainst, model.neutralAgainst, model.weakAgainst )
+
+                        2 ->
+                            ( model.strongAgainst, model.weakAgainst, model.neutralAgainst )
+
+                        3 ->
+                            ( model.neutralAgainst, model.weakAgainst, model.strongAgainst )
+
+                        4 ->
+                            ( model.neutralAgainst, model.strongAgainst, model.weakAgainst )
+
+                        5 ->
+                            ( model.weakAgainst, model.strongAgainst, model.neutralAgainst )
+
+                        6 ->
+                            ( model.weakAgainst, model.neutralAgainst, model.strongAgainst )
+
+                        _ ->
+                            ( ShouldNeverOccur, ShouldNeverOccur, ShouldNeverOccur )
             in
-            ( 
-                {model|counterWith = counterWith}
-                , Cmd.none
+            ( { model | counterWith = counterWith }
+            , Cmd.none
             )
 
-startOpponentOrderSelection: Model -> Cmd Msg
+
+startOpponentOrderSelection : Model -> Cmd Msg
 startOpponentOrderSelection model =
     generate RandomizedOpponentOrder (Random.int 1 6)
+
 
 startWeakAgainstSelection : PokeType -> Cmd Msg
 startWeakAgainstSelection opponent =
