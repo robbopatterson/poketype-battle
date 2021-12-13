@@ -34,7 +34,16 @@ gameview model =
     div [ class "game-container" ]
         [ div [ class "title-section" ]
             [ h1 [ class "center" ] [ text "PokeType Battle" ]
-            , h2 [ class "center" ] [ text ("Score: " ++ String.fromInt model.score) ]
+            , div [ class "center" ]
+                [ h2
+                    [ if model.remainingseconds == 0 then
+                        class "center score final-score"
+
+                      else
+                        class "center score"
+                    ]
+                    [ text ("Score: " ++ String.fromInt model.score) ]
+                ]
             , p [ class "center" ] [ text ("Time Remaining: " ++ String.fromInt model.remainingseconds) ]
             , div
                 [ style "display" "flex"
@@ -279,7 +288,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Start ->
-            ( { model | state = Started, remainingseconds=gameDuration, score=0 }
+            ( { model | state = Started, remainingseconds = gameDuration, score = 0 }
             , Delay.after 1000 NextSecond
             )
 
