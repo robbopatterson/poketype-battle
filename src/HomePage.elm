@@ -20,7 +20,13 @@ view model =
             , p [] [ text "Defeat as many as you can in 30 seconds" ]
             , a [ href "https://www.pinterest.ca/pin/144889312992375493/" ] [ text "Click for Pokemon Effectiveness Chart" ]
             , p []
-                [ button [ onClick Start ] [ text "Start" ]
+                [ button [ 
+                    style "min-width" "300px"
+                    , style "min-height" "40px"
+                    , style "margin" "40px"
+                    , style "padding" "40px"
+                     ,onClick Start
+                     ] [ text "Start" ]
                 ]
             ]
 
